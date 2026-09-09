@@ -1,0 +1,8 @@
+node_modules/
+.pnpm-store/
+dist/
+.env
+coverage/
+*.log
+.DS_Store
+\[글로우업리즈\]개발자_과제_안내.md

@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: glowuprizz
+      POSTGRES_PASSWORD: glowuprizz
+      POSTGRES_DB: glowuprizz
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U glowuprizz"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

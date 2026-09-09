@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="리드마그넷 캠페인과 전환을 관리하는 CRM">
+  <title>Glowuprizz CRM</title>
+  <link rel="stylesheet" href="/assets/app.css?v=8">
+</head>
+<body>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <section id="login" class="login-shell">
+    <div class="login-copy">
+      <span class="eyebrow">GLOWUPRIZZ CRM</span>
+      <h1>관심이<br>고객이 되는 순간.</h1>
+      <p>폼을 배포하고, 채널별 전환을 한 화면에서 확인하세요.</p>
+    </div>
+    <form id="login-form" class="panel login-card">
+      <h2>운영자 로그인</h2>
+      <label>이메일<input name="email" type="email" value="admin@example.com" required autocomplete="username"></label>
+      <label>비밀번호<input name="password" type="password" value="ChangeMe123!" required autocomplete="current-password"></label>
+      <button type="submit">로그인</button>
+      <p class="form-error" id="login-error" role="alert"></p>
+    </form>
+  </section>
+
+  <div id="app" class="app-shell" hidden>
+    <aside>
+      <a class="brand" href="/admin/dashboard" data-route><span class="brand-kicker">GLOW UP</span><strong>RIZZ</strong><span class="brand-product">CRM</span></a>
+      <nav aria-label="관리 메뉴">
+        <span class="nav-group">성과</span>
+        <a class="nav-item" href="/admin/dashboard" data-route>성과 대시보드</a>
+        <span class="nav-group">운영</span>
+        <a class="nav-item" href="/admin/forms" data-route>폼 관리</a>
+        <a class="nav-item" href="/admin/campaigns" data-route>캠페인 관리</a>
+        <a class="nav-item" href="/admin/leads" data-route>신청자 CRM</a>
+      </nav>
+      <button id="logout" class="logout">로그아웃</button>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div><span class="eyebrow" id="view-eyebrow">LEAD MAGNET OPERATIONS</span><h1 id="view-title">성과 대시보드</h1></div>
+        <span id="operator-email" class="operator"></span>
+      </header>
+
+      <section id="dashboard-view" class="view" hidden>
+        <div id="metric-cards" class="metrics"></div>
+        <div class="panel campaigns-panel">
+          <div class="panel-title">
+            <div><h2>캠페인 성과</h2><p>방문부터 신청까지 전환 흐름을 비교하세요.</p></div>
+            <a class="secondary button-link" href="/admin/campaigns/new" data-route>새 캠페인</a>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>캠페인</th><th>폼</th><th>방문</th><th>방문자</th><th>신청</th><th>전환율</th><th></th></tr></thead><tbody id="campaign-table"></tbody></table></div>
+          <div id="campaign-empty" class="empty" hidden>아직 캠페인이 없습니다. 폼을 등록하고 첫 캠페인을 만들어 보세요.</div>
+        </div>
+      </section>
+
+      <section id="forms-view" class="view" hidden>
+        <div class="panel list-panel">
+          <div class="list-heading"><div><h2>등록된 폼</h2><p id="form-count">캠페인에서 사용할 HTML 폼입니다.</p></div><a class="secondary button-link" href="/admin/forms/new" data-route>새 폼 등록</a></div>
+          <form id="form-search" class="search-bar" role="search"><label for="form-query">폼 검색</label><input id="form-query" name="q" type="search" placeholder="폼 이름 또는 파일명 검색"><button type="submit">검색</button><a class="search-reset" href="/admin/forms" data-route hidden>초기화</a></form>
+          <div id="form-list" class="record-list"></div>
+          <nav id="form-pagination" class="pagination" aria-label="폼 목록 페이지"></nav>
+        </div>
+      </section>
+
+      <section id="form-create-view" class="view" hidden>
+        <a class="back-link" href="/admin/forms" data-route>← 폼 목록으로 돌아가기</a>
+        <form id="upload-form" class="panel action-card create-card">
+          <span class="step">새 폼</span><h2>HTML 폼 등록</h2><p>AI로 만든 단일 HTML 파일을 등록합니다.</p>
+          <label>폼 이름<input name="name" placeholder="예: 퍼스널 브랜딩 체크리스트"></label>
+          <label class="file-drop">HTML 파일<input name="file" type="file" accept=".html,text/html" required><span>파일 선택 · 최대 512KB</span></label>
+          <button type="submit">폼 등록</button>
+        </form>
+      </section>
+
+      <section id="campaigns-view" class="view" hidden>
+        <div class="panel list-panel">
+          <div class="list-heading"><div><h2>등록된 캠페인</h2><p id="campaign-count">채널별 공개 링크를 만들고 성과를 확인하세요.</p></div><a class="secondary button-link" href="/admin/campaigns/new" data-route>새 캠페인</a></div>
+          <form id="campaign-search" class="search-bar" role="search"><label for="campaign-query">캠페인 검색</label><input id="campaign-query" name="q" type="search" placeholder="캠페인 또는 폼 이름 검색"><button type="submit">검색</button><a class="search-reset" href="/admin/campaigns" data-route hidden>초기화</a></form>
+          <div id="campaign-list" class="campaign-list"></div>
+          <nav id="campaign-pagination" class="pagination" aria-label="캠페인 목록 페이지"></nav>
+        </div>
+      </section>
+
+      <section id="campaign-create-view" class="view" hidden>
+        <a class="back-link" href="/admin/campaigns" data-route>← 캠페인 목록으로 돌아가기</a>
+        <form id="campaign-form" class="panel action-card create-card">
+          <span class="step">새 캠페인</span><h2>캠페인 만들기</h2><p>등록한 폼을 캠페인과 연결합니다.</p>
+          <label>캠페인 이름<input name="name" placeholder="예: 9월 인스타그램 캠페인" required></label>
+          <label>사용할 폼<select name="formTemplateId" id="form-select" required><option value="">폼을 먼저 등록하세요</option></select></label>
+          <button type="submit">캠페인 생성</button>
+        </form>
+      </section>
+      <section id="leads-view" class="view" hidden>
+        <div class="panel">
+          <div class="panel-title"><div><h2>신청자 CRM</h2><p>캠페인을 선택해 수집된 신청 정보를 확인하세요.</p></div><select id="lead-campaign"><option value="">캠페인 선택</option></select></div>
+          <div class="table-wrap"><table><thead><tr><th>신청 시각</th><th>채널</th><th>신청 내용</th></tr></thead><tbody id="lead-table"></tbody></table></div>
+          <div id="lead-empty" class="empty">캠페인을 선택하세요.</div>
+        </div>
+      </section>
+
+      <section id="analytics-view" class="view" hidden>
+        <a class="back-link" href="/admin/campaigns" data-route>← 캠페인 목록으로 돌아가기</a>
+        <div id="analytics-metrics" class="metrics"></div>
+        <div class="analytics-grid">
+          <article class="panel chart-panel">
+            <div class="panel-title"><div><h2>전환 퍼널</h2><p>순 방문자가 신청으로 이어진 비율입니다.</p></div></div>
+            <div id="funnel-chart" class="funnel-chart"></div>
+          </article>
+          <article class="panel chart-panel">
+            <div class="panel-title"><div><h2>채널별 전환 비교</h2><p>채널별 순 방문자와 신청 수를 비교합니다.</p></div></div>
+            <div class="chart-legend"><span><i class="legend-visitors"></i>순 방문자</span><span><i class="legend-submissions"></i>신청</span></div>
+            <div id="channel-chart" class="bar-chart" role="img" aria-label="채널별 순 방문자와 신청 수 비교 차트"></div>
+          </article>
+        </div>
+        <div class="panel channel-table-panel">
+          <div class="panel-title"><div><h2>채널별 상세 지표</h2><p>배포 링크별 방문과 전환 성과입니다.</p></div></div>
+          <div class="table-wrap"><table><thead><tr><th>채널</th><th>방문</th><th>순 방문자</th><th>신청</th><th>전환율</th></tr></thead><tbody id="channel-table"></tbody></table></div>
+          <div id="analytics-empty" class="empty" hidden>아직 채널 링크가 없습니다.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/assets/app.js?v=8"></script>
+</body>
+</html>

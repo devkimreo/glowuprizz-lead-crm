@@ -1,0 +1,73 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Glowuprizz Lead Magnet CRM API",
+    "version": "1.1.0",
+    "description": "운영자 인증, HTML 폼 관리, 캠페인 배포, 공개 신청 및 성과 조회 API"
+  },
+  "servers": [{"url": "http://localhost:3000", "description": "로컬 Docker 환경"}],
+  "tags": [
+    {"name": "Auth", "description": "운영자 인증과 세션"},
+    {"name": "Forms", "description": "HTML 폼 등록과 조회"},
+    {"name": "Campaigns", "description": "캠페인 생성과 조회"},
+    {"name": "Distribution", "description": "채널별 배포 링크"},
+    {"name": "Public", "description": "방문자 공개 폼과 신청"},
+    {"name": "CRM", "description": "수집된 신청자 데이터"},
+    {"name": "Analytics", "description": "캠페인과 채널 성과"}
+  ],
+  "paths": {
+    "/api/auth/login": {"post": {"summary": "운영자 로그인", "tags": ["Auth"], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Login"}}}}, "responses": {"200": {"description": "로그인 성공", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Operator"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}}}},
+    "/api/auth/logout": {"post": {"summary": "로그아웃", "tags": ["Auth"], "responses": {"204": {"description": "로그아웃 성공"}}}},
+    "/api/me": {"get": {"summary": "현재 로그인 운영자", "tags": ["Auth"], "security": [{"cookieAuth": []}], "responses": {"200": {"description": "현재 운영자", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Operator"}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}}}},
+    "/api/forms": {
+      "get": {"summary": "등록 폼 목록", "tags": ["Forms"], "security": [{"cookieAuth": []}], "responses": {"200": {"description": "최신순 폼 목록", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/FormTemplate"}}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}}},
+      "post": {"summary": "HTML 폼 등록", "description": "form 요소를 포함하는 512KB 이하의 단일 .html 파일을 등록합니다.", "tags": ["Forms"], "security": [{"cookieAuth": []}], "requestBody": {"required": true, "content": {"multipart/form-data": {"schema": {"type": "object", "required": ["file"], "properties": {"name": {"type": "string", "maxLength": 120}, "file": {"type": "string", "format": "binary"}}}}}}, "responses": {"201": {"description": "등록 성공", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/FormTemplateCreated"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "413": {"$ref": "#/components/responses/PayloadTooLarge"}}}
+    },
+    "/api/campaigns": {
+      "get": {"summary": "캠페인 및 요약 성과 목록", "tags": ["Campaigns"], "security": [{"cookieAuth": []}], "responses": {"200": {"description": "최신순 캠페인 목록", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/CampaignSummary"}}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}}},
+      "post": {"summary": "캠페인 생성", "tags": ["Campaigns"], "security": [{"cookieAuth": []}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CampaignCreate"}}}}, "responses": {"201": {"description": "생성 성공", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CampaignCreated"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}}}
+    },
+    "/api/campaigns/{id}/links": {
+      "parameters": [{"$ref": "#/components/parameters/CampaignId"}],
+      "get": {"summary": "배포 링크 목록", "tags": ["Distribution"], "security": [{"cookieAuth": []}], "responses": {"200": {"description": "채널별 배포 링크", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/DistributionLink"}}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}}},
+      "post": {"summary": "채널별 배포 링크 생성", "description": "같은 캠페인과 채널에 이미 링크가 있으면 기존 링크를 반환합니다.", "tags": ["Distribution"], "security": [{"cookieAuth": []}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Channel"}}}}, "responses": {"201": {"description": "링크 생성 또는 기존 링크 반환", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/DistributionLink"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}}}
+    },
+    "/api/campaigns/{id}/submissions": {"get": {"summary": "캠페인 신청자 CRM 목록", "description": "최신 신청자 최대 200건을 반환합니다.", "tags": ["CRM"], "security": [{"cookieAuth": []}], "parameters": [{"$ref": "#/components/parameters/CampaignId"}], "responses": {"200": {"description": "신청자 목록", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Lead"}}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}}}},
+    "/api/campaigns/{id}/analytics": {"get": {"summary": "캠페인 및 채널별 성과", "description": "전환율은 신청 수를 순 방문자 수로 나눈 백분율입니다.", "tags": ["Analytics"], "security": [{"cookieAuth": []}], "parameters": [{"$ref": "#/components/parameters/CampaignId"}], "responses": {"200": {"description": "전체 및 채널별 성과", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Analytics"}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}}}},
+    "/f/{token}": {"get": {"summary": "공개 캠페인 신청 폼", "tags": ["Public"], "parameters": [{"$ref": "#/components/parameters/Token"}], "responses": {"200": {"description": "sandbox iframe을 포함한 공개 HTML 화면", "content": {"text/html": {"schema": {"type": "string"}}}}, "404": {"description": "존재하지 않거나 중지된 캠페인"}}}},
+    "/api/public/{token}/visit": {"post": {"summary": "공개 폼 방문 기록", "tags": ["Public"], "parameters": [{"$ref": "#/components/parameters/Token"}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Visitor"}}}}, "responses": {"201": {"description": "기록 성공", "content": {"application/json": {"schema": {"type": "object", "properties": {"recorded": {"type": "boolean", "example": true}}}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "404": {"$ref": "#/components/responses/NotFound"}}}},
+    "/api/public/{token}/submissions": {"post": {"summary": "공개 폼 신청", "tags": ["Public"], "parameters": [{"$ref": "#/components/parameters/Token"}], "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SubmissionCreate"}}}}, "responses": {"201": {"description": "신청 성공", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/SubmissionCreated"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "404": {"$ref": "#/components/responses/NotFound"}, "413": {"$ref": "#/components/responses/PayloadTooLarge"}}}}
+  },
+  "components": {
+    "securitySchemes": {"cookieAuth": {"type": "apiKey", "in": "cookie", "name": "glow_session", "description": "로그인 성공 시 발급되는 HTTP-only 세션 쿠키"}},
+    "parameters": {
+      "CampaignId": {"name": "id", "in": "path", "required": true, "schema": {"type": "string", "format": "uuid"}},
+      "Token": {"name": "token", "in": "path", "required": true, "schema": {"type": "string"}}
+    },
+    "responses": {
+      "BadRequest": {"description": "요청 값이 올바르지 않음", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "Unauthorized": {"description": "인증이 필요하거나 세션이 만료됨", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "NotFound": {"description": "요청한 리소스를 찾을 수 없음", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}},
+      "PayloadTooLarge": {"description": "업로드 또는 신청 데이터가 제한을 초과함", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Error"}}}}
+    },
+    "schemas": {
+      "Error": {"type": "object", "required": ["error"], "properties": {"error": {"type": "string"}, "details": {"type": "array", "items": {"type": "object"}}}},
+      "Login": {"type": "object", "required": ["email", "password"], "properties": {"email": {"type": "string", "format": "email"}, "password": {"type": "string", "minLength": 8}}},
+      "Operator": {"type": "object", "required": ["email"], "properties": {"id": {"type": "string", "format": "uuid"}, "email": {"type": "string", "format": "email"}}},
+      "FormTemplate": {"type": "object", "required": ["id", "name", "filename", "created_at"], "properties": {"id": {"type": "string", "format": "uuid"}, "name": {"type": "string"}, "filename": {"type": "string"}, "created_at": {"type": "string", "format": "date-time"}}},
+      "FormTemplateCreated": {"type": "object", "required": ["id", "name", "filename"], "properties": {"id": {"type": "string", "format": "uuid"}, "name": {"type": "string"}, "filename": {"type": "string"}}},
+      "CampaignCreate": {"type": "object", "required": ["name", "formTemplateId"], "properties": {"name": {"type": "string", "maxLength": 120}, "formTemplateId": {"type": "string", "format": "uuid"}}},
+      "CampaignCreated": {"type": "object", "required": ["id", "publicId", "name", "status"], "properties": {"id": {"type": "string", "format": "uuid"}, "publicId": {"type": "string"}, "name": {"type": "string"}, "status": {"type": "string", "enum": ["active", "paused"]}}},
+      "CampaignSummary": {"type": "object", "required": ["id", "name", "form_name", "status", "visits", "visitors", "submissions", "conversionRate"], "properties": {"id": {"type": "string", "format": "uuid"}, "name": {"type": "string"}, "public_id": {"type": "string"}, "form_name": {"type": "string"}, "status": {"type": "string", "enum": ["active", "paused"]}, "created_at": {"type": "string", "format": "date-time"}, "visits": {"type": "integer"}, "visitors": {"type": "integer"}, "submissions": {"type": "integer"}, "conversionRate": {"type": "number", "format": "float"}}},
+      "Channel": {"type": "object", "required": ["channel"], "properties": {"channel": {"type": "string", "enum": ["instagram", "x", "youtube", "threads"]}}},
+      "DistributionLink": {"type": "object", "required": ["id", "channel", "token", "url"], "properties": {"id": {"type": "string", "format": "uuid"}, "channel": {"type": "string"}, "token": {"type": "string"}, "url": {"type": "string", "format": "uri"}}},
+      "Visitor": {"type": "object", "required": ["visitorId"], "properties": {"visitorId": {"type": "string", "minLength": 8, "maxLength": 100}}},
+      "SubmissionCreate": {"type": "object", "required": ["visitorId", "data"], "properties": {"visitorId": {"type": "string", "minLength": 8, "maxLength": 100}, "data": {"type": "object", "additionalProperties": true}}},
+      "SubmissionCreated": {"type": "object", "required": ["id", "message"], "properties": {"id": {"type": "string", "format": "uuid"}, "message": {"type": "string"}}},
+      "Lead": {"type": "object", "required": ["id", "data", "channel", "created_at"], "properties": {"id": {"type": "string", "format": "uuid"}, "data": {"type": "object", "additionalProperties": true}, "channel": {"type": "string"}, "created_at": {"type": "string", "format": "date-time"}}},
+      "Metric": {"type": "object", "required": ["visits", "visitors", "submissions", "conversionRate"], "properties": {"visits": {"type": "integer"}, "visitors": {"type": "integer"}, "submissions": {"type": "integer"}, "conversionRate": {"type": "number", "format": "float"}}},
+      "ChannelMetric": {"allOf": [{"$ref": "#/components/schemas/Metric"}, {"type": "object", "required": ["channel"], "properties": {"channel": {"type": "string"}}}]},
+      "Analytics": {"type": "object", "required": ["total", "channels"], "properties": {"total": {"$ref": "#/components/schemas/Metric"}, "channels": {"type": "array", "items": {"$ref": "#/components/schemas/ChannelMetric"}}}}
+    }
+  }
+}

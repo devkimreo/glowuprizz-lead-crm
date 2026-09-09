@@ -1,0 +1,6 @@
+allowBuilds:
+  '@scarf/scarf': false
+  esbuild: true
+overrides:
+  body-parser: 2.2.0
+  type-is: 2.0.1
